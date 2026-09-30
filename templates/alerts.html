@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h2>Historial de alertas</h2><p>Un aviso nuevo se crea cuando un producto cae por debajo de su mínimo. Tras recuperarse, una nueva caída genera otro aviso.</p></div><form action="{{ url_for('check_now') }}" method="post"><button class="primary">Revisar inventario ahora</button></form></div>
+{% if alerts %}<div class="alert-list">{% for alert in alerts %}<article class="card alert-card"><div class="alert-top"><div><h3>Alerta #{{ alert.id }}</h3><span>{{ alert.created_at[:19].replace('T', ' ') }} · {{ alert['items']|length }} producto(s)</span></div><span class="badge {{ alert.status }}">{{ {'simulado':'Simulado: no enviado','enviado':'Enviado','error':'Error de envío','pendiente':'Pendiente','enviando':'Enviando'}.get(alert.status, alert.status) }}</span></div>
+  <ul>{% for item in alert['items'] %}<li><strong>{{ item.codigo }} — {{ item.nombre }}</strong>: actual {{ item.stock_actual }}, mínimo {{ item.stock_minimo }}</li>{% endfor %}</ul>
+  <details><summary>Ver correo generado y resultado</summary><p><strong>Asunto:</strong> {{ alert.subject }}</p><pre>{{ alert.body }}</pre><p>Intentos: {{ alert.attempts }}{% if alert.last_attempt_at %} · Último intento: {{ alert.last_attempt_at[:19].replace('T', ' ') }}{% endif %}</p>{% if alert.error %}<p class="error-text"><strong>Error:</strong> {{ alert.error }}</p>{% endif %}</details>
+  {% if alert.status == 'error' %}<form action="{{ url_for('retry_alert', alert_id=alert.id) }}" method="post"><button>Reintentar envío</button></form>{% endif %}
+</article>{% endfor %}</div>{% else %}<section class="card"><p>No hay alertas. Pulsa “Revisar inventario ahora” para probar el flujo.</p></section>{% endif %}
+{% endblock %}

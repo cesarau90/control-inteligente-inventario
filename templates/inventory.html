@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h2>Inventario</h2><p>Los productos bajo el mínimo aparecen resaltados.</p></div><form action="{{ url_for('check_now') }}" method="post"><button class="primary">Revisar inventario ahora</button></form></div>
+<div class="two-columns">
+  <section class="card"><h3>Registrar producto</h3>
+    <form action="{{ url_for('add_product') }}" method="post" class="form-grid">
+      <label>Código<input name="codigo" maxlength="120" required></label>
+      <label>Nombre<input name="nombre" maxlength="120" required></label>
+      <label>Categoría<input name="categoria" maxlength="120" required></label>
+      <label>Stock actual<input type="number" name="stock_actual" min="0" step="1" required></label>
+      <label>Stock mínimo<input type="number" name="stock_minimo" min="0" step="1" required></label>
+      <button class="primary">Guardar producto</button>
+    </form>
+  </section>
+  <section class="card"><h3>Importar desde Excel</h3><p>Columnas obligatorias: <code>codigo, nombre, categoria, stock_actual, stock_minimo</code>. Se revisa todo el archivo antes de guardar. Los códigos existentes se actualizan.</p>
+    <form action="{{ url_for('import_file') }}" method="post" enctype="multipart/form-data" class="stack">
+      <label>Archivo .xlsx<input type="file" name="archivo" accept=".xlsx" required></label>
+      <button>Importar archivo</button>
+    </form>
+    <a class="download" href="{{ url_for('static', filename='inventario_ejemplo.xlsx') }}" download>Descargar Excel de ejemplo</a>
+  </section>
+</div>
+<section class="card table-card"><h3>Productos registrados</h3>
+  {% if products %}<div class="table-scroll"><table><thead><tr><th>Código</th><th>Nombre</th><th>Categoría</th><th>Actual</th><th>Mínimo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+  {% for item in products %}<tr class="{{ 'low-row' if item.stock_actual < item.stock_minimo else '' }}">
+    <td><strong>{{ item.codigo }}</strong></td><td>{{ item.nombre }}</td><td>{{ item.categoria }}</td><td>{{ item.stock_actual }}</td><td>{{ item.stock_minimo }}</td>
+    <td><span class="badge {{ 'low' if item.stock_actual < item.stock_minimo else 'ok' }}">{{ 'Stock bajo' if item.stock_actual < item.stock_minimo else 'Suficiente' }}</span></td>
+    <td><div class="actions"><details><summary>Movimiento</summary><form action="{{ url_for('move_stock', product_id=item.id) }}" method="post" class="inline-form"><select name="tipo" aria-label="Tipo de movimiento"><option value="entrada">Entrada</option><option value="salida">Salida</option></select><input type="number" name="cantidad" min="1" step="1" placeholder="Unidades" aria-label="Unidades" required><button>Registrar</button></form></details>
+      <details><summary>Editar</summary><form action="{{ url_for('edit_product', product_id=item.id) }}" method="post" class="edit-form"><label>Código<input name="codigo" value="{{ item.codigo }}" required></label><label>Nombre<input name="nombre" value="{{ item.nombre }}" required></label><label>Categoría<input name="categoria" value="{{ item.categoria }}" required></label><label>Stock actual<input type="number" name="stock_actual" min="0" step="1" value="{{ item.stock_actual }}" required></label><label>Stock mínimo<input type="number" name="stock_minimo" min="0" step="1" value="{{ item.stock_minimo }}" required></label><button>Guardar cambios</button></form></details>
+      <form action="{{ url_for('remove_product', product_id=item.id) }}" method="post" onsubmit="return confirm('¿Eliminar este producto?')"><button class="danger">Eliminar</button></form></div></td>
+  </tr>{% endfor %}</tbody></table></div>{% else %}<p>El inventario está vacío. Registra un producto o importa el Excel de ejemplo.</p>{% endif %}
+</section>
+<script src="{{ url_for('static', filename='inventory.js') }}" defer></script>
+{% endblock %}

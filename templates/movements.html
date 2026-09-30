@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-title"><div><h2>Movimientos</h2><p>Últimas 200 entradas y salidas registradas.</p></div></div>
+<section class="card table-card">{% if movements %}<div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Código</th><th>Producto</th><th>Tipo</th><th>Unidades</th><th>Antes</th><th>Después</th></tr></thead><tbody>{% for item in movements %}<tr><td>{{ item.created_at[:19].replace('T', ' ') }}</td><td>{{ item.product_code }}</td><td>{{ item.product_name }}</td><td>{{ item.tipo|capitalize }}</td><td>{{ item.cantidad }}</td><td>{{ item.stock_anterior }}</td><td>{{ item.stock_nuevo }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p>Todavía no hay movimientos.</p>{% endif %}</section>
+{% endblock %}

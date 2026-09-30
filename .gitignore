@@ -1,0 +1,10 @@
+.env
+.venv/
+.deps/
+__pycache__/
+*.pyc
+inventario.db
+inventario.db-*
+monitor.lock
+monitor.log
+.pytest_cache/
